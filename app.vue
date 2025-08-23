@@ -1,6 +1,6 @@
 <script setup lang="ts">
   const canvasRef = ref<HTMLCanvasElement | null>(null)
-  const ctxRef = ref<CanvasRenderingContext2D | null>(null)
+  const contextRef = ref<CanvasRenderingContext2D | null>(null)
 
   const drawing = ref(false)
   const label = ref<number | null>(null)
@@ -10,33 +10,6 @@
   const API = runtimeConfig.public.apiBase
 
   const isSending = ref(false)
-
-  async function submitSample() {
-    if (!canvasRef.value || !ctxRef.value) return
-    if (label.value === null) {
-      alert('正解ラベル（0〜9）を選択してください')
-      return
-    }
-
-    const dataUrl = canvasRef.value.toDataURL('image/png')
-
-    try {
-      isSending.value = true
-
-      console.log("画像", dataUrl)
-      console.log("ラベル", label.value)
-      console.log(`${API}/api/samples`)
-
-      alert('送信しました！')
-      clearCanvas()
-      label.value = null
-    } catch (err) {
-      console.error(err)
-      alert('送信に失敗しました')
-    } finally {
-      isSending.value = false
-    }
-  }
 
   onMounted(() => {
     if (!canvasRef.value) return
@@ -51,18 +24,18 @@
     canvas.style.width = width + 'px'
     canvas.style.height = height + 'px'
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const context = canvas.getContext('2d')
+    if (!context) return
   
-    ctx.scale(devicePixelRatio, devicePixelRatio)
+    context.scale(devicePixelRatio, devicePixelRatio)
 
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, width, height)
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = '#fff'
-    ctx.lineWidth = strokeWidth.value
-    ctxRef.value = ctx
+    context.fillStyle = '#000'
+    context.fillRect(0, 0, width, height)
+    context.lineCap = 'round'
+    context.lineJoin = 'round'
+    context.strokeStyle = '#fff'
+    context.lineWidth = strokeWidth.value
+    contextRef.value = context
 
     const getCanvasPosition = (e: MouseEvent) => {
       const rectangle = canvas.getBoundingClientRect()
@@ -73,15 +46,15 @@
     const startDrawing = (e: MouseEvent) => {
       drawing.value = true
       const { x, y } = getCanvasPosition(e)
-      ctx.beginPath()
-      ctx.moveTo(x, y)
+      context.beginPath()
+      context.moveTo(x, y)
     }
 
     const drawLine = (e: MouseEvent) => {
       if (!drawing.value) return
       const { x, y } = getCanvasPosition(e)
-      ctx.lineTo(x, y)
-      ctx.stroke()
+      context.lineTo(x, y)
+      context.stroke()
     }
 
     const stopDrawing = () => (drawing.value = false)
@@ -95,12 +68,73 @@
     if (!canvasRef.value) return
     const canvas = canvasRef.value
   
-    if (!ctxRef.value) return
-    const ctx = ctxRef.value
+    if (!contextRef.value) return
+    const context = contextRef.value
 
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.strokeStyle = '#fff'
+    context.fillStyle = '#000'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.strokeStyle = '#fff'
+  }
+
+  function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png', quality?: number) {
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('Failed to create blob from canvas'))
+        }
+      }, type, quality)
+    })
+  }
+
+  async function downscaleTo28x28(srcCanvas: HTMLCanvasElement) {
+    const offScreenCanvas = document.createElement('canvas')
+    offScreenCanvas.width = 28
+    offScreenCanvas.height = 28
+    const offCtx = offScreenCanvas.getContext('2d')!
+
+    offCtx.imageSmoothingEnabled = true
+    offCtx.drawImage(srcCanvas, 0, 0, offScreenCanvas.width, offScreenCanvas.height)
+    return offScreenCanvas
+  }
+
+  async function submitSample() {
+    if (!canvasRef.value || !contextRef.value) return
+    if (label.value === null) {
+      alert('正解ラベル（0~9）を選択してください')
+      return
+    }
+
+    try {
+      isSending.value = true
+
+      // 28x28へ変換
+      const src = await downscaleTo28x28(canvasRef.value)
+
+      const blob = await canvasToBlob(src, 'image/png')
+      console.log(blob)
+      const file = new File([blob] , 'sample.png', { type: 'image/png' })
+
+      const form = new FormData()
+      form.append('image', file)  
+      form.append('label', String(label.value))
+
+      const response = await $fetch(`${API}/api/v1/samples`, {
+        method: "POST",
+        body: form
+      })
+
+      console.log(response)
+      alert('送信しました！')
+      clearCanvas()
+      label.value = null
+    } catch (err) {
+      console.error(err)
+      alert('送信に失敗しました')
+    } finally {
+      isSending.value = false
+    }
   }
 </script>
 
@@ -133,7 +167,7 @@
             min="6"
             max="40"
             v-model.number="strokeWidth"
-            @input="ctxRef && (ctxRef.lineWidth = strokeWidth)"
+            @input="contextRef && (contextRef.lineWidth = strokeWidth)"
             class="w-full accent-black"
           />
           <span class="text-sm tabular-nums w-8 text-right">{{ strokeWidth }}</span>
