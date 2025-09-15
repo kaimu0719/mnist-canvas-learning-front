@@ -130,10 +130,10 @@ onBeforeUnmount(() => {
   <article class="rounded-xl border bg-white shadow-sm p-4">
     <header class="mb-3 flex items-center justify-between">
       <h2 class="text-sm font-semibold text-neutral-800">
-        Drawing #{{ props.drawingId }}
+        MNISTデータ #{{ props.drawingId }}
       </h2>
       <p v-if="predStatus" class="text-xs text-neutral-500">
-        status: <span class="tabular-nums">{{ predStatus }}</span>
+        ステータス: <span class="tabular-nums">{{ predStatus }}</span>
       </p>
     </header>
 
@@ -149,10 +149,10 @@ onBeforeUnmount(() => {
       <div class="flex-1 space-y-1">
         <div class="text-sm">
           ラベル:
-          <span class="font-mono text-base">{{ label }}</span>
+          <span class="font-mono text-base">{{ label ? label : "未定義" }}</span>
           <template v-if="predStatus === 'completed' && answer !== null">
             <span class="mx-2 text-neutral-400">/</span>
-            正解ラベル:
+            AI推測ラベル:
             <span class="font-mono text-base">{{ answer }}</span>
           </template>
         </div>
@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
           Prediction #{{ props.predictionId }}
         </div>
         <div v-if="predStatus && predStatus !== 'completed' && predStatus !== 'failed'" class="text-xs text-neutral-500">
-          予測中…（3秒ごとに更新）
+          予測中…
         </div>
         <div v-if="predStatus === 'failed'" class="text-xs text-red-600">
           予測に失敗しました

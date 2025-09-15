@@ -12,12 +12,7 @@
 
   const label = ref<number | null>(null)
 
-  async function submitDrawing() {
-    if (label.value == null) {
-      alert('正解ラベル（0~9）を選択してください')
-      return
-    }
-  
+  async function submitDrawing() {  
     try {
       const canvas = await to28x28Canvas()
       const blob = await toBlob(canvas, 'image/png')
@@ -72,7 +67,7 @@
           クリア
         </button>
 
-        <button type="button" @click="submitDrawing" :disabled="isSending || label === null"
+        <button type="button" @click="submitDrawing" :disabled="isSending"
           class="inline-flex items-center gap-2 rounded-md bg-black text-white px-3 py-2 text-sm disabled:opacity-50 hover:opacity-90 active:scale-[0.99] transition">
           {{ isSending ? '送信中...' : 'サンプル送信' }}
         </button>
