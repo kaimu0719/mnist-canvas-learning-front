@@ -8,7 +8,7 @@ export function useMnistPredictions() {
   const config = useRuntimeConfig()
   const API = config.public.apiBase
 
-  const submit = async (label: number, file: File) => {
+  const submit = async (label: number | null, file: File) => {
     isSending.value = true
     try {
       const form = new FormData()
