@@ -24,14 +24,18 @@
     <div v-if="error">読み込みに失敗しました</div>
     <div v-else-if="pending">読み込み中...</div>
     <ul v-else class="space-y-4">
-      <li v-for="d in drawings" :key="d.id" class="flex items-center gap-4">
+      <li
+        v-for="drawing in drawings"
+        :key="drawing.id"
+        class="flex items-center gap-4"
+      >
         <img
-          v-if="d.image_url"
-          :src="d.image_url"
-          :alt="`drawing-${d.id}`"
+          v-if="drawing.image_url"
+          :src="drawing.image_url"
+          :alt="`drawing-${drawing.id}`"
           class="w-16 h-16 object-contain border rounded bg-white"
         />
-        <span class="text-lg font-mono">{{ d.label }}</span>
+        <span class="text-lg font-mono">{{ drawing.label }}</span>
       </li>
     </ul>
   </main>
