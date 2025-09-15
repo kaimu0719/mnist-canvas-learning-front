@@ -69,7 +69,7 @@
 
         <button type="button" @click="submitDrawing" :disabled="isSending"
           class="inline-flex items-center gap-2 rounded-md bg-black text-white px-3 py-2 text-sm disabled:opacity-50 hover:opacity-90 active:scale-[0.99] transition">
-          {{ isSending ? '送信中...' : 'サンプル送信' }}
+          {{ isSending ? '推論中...' : '推論開始' }}
         </button>
       </div>
     </div>
