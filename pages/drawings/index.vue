@@ -1,7 +1,7 @@
 <script setup lang="ts">
   type Drawing = {
     id: number
-    label: number
+    label: number | null
     image_url: string | null
   }
 
@@ -35,7 +35,7 @@
           :alt="`drawing-${drawing.id}`"
           class="w-16 h-16 object-contain border rounded bg-white"
         />
-        <span class="text-lg font-mono">{{ drawing.label }}</span>
+        <span class="text-lg font-mono">{{ drawing.label ? drawing.label : "未設定" }}</span>
       </li>
     </ul>
   </main>
